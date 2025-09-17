@@ -209,5 +209,3 @@ This project is licensed under the MIT License. See the `LICENSE` file for detai
 * ROBOTIS for the TurtleBot3 simulation tools.
 
 ---
-
-Let me know if you'd like this in a `README.md` file format or converted into documentation (e.g. Sphinx, Doxygen).
