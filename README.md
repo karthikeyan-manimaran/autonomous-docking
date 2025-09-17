@@ -1,8 +1,7 @@
-# autodock
+# autonomous docking
 
-![](https://github.com/osrf/autodock/workflows/ci/badge.svg)
 
-ROS packages for automatic docking
+ROS packages for autonomous docking
 
 `autodock` a state machine based auto docking solution for differential-drive robot,
 allows accurate and reliable docking. It utilizes 3 fiducial markers to locate the 
@@ -11,7 +10,6 @@ for fiducial marker detection. Note that, this package works on top of the navig
 stack, not making any alteration to the robot's nav stack. The solution is fully
 tested on multiple simulated and actual robots.
 
-![](docs/dock_gz_sim.gif) ![](docs/tb3_dock_sim.gif)
 
 Packages:
  - `autodock_core`: Core autodock scripts and lib
@@ -32,15 +30,6 @@ cd catkin_ws
 rosdep update && rosdep install --from-paths src --ignore-src -yr
 catkin_make
 ```
-## Architecture Diagram
-
-![](docs/architecture.png)
-
-## State Machine Diagram
-
-![](docs/state_diagram.png)
-
----
 
 ## Run Examples on Simulation with MockRobot
 
@@ -136,35 +125,5 @@ Try place an obstacle near the robot during docking and see if it pauses.
 > Note: the current `obstacle_observer` will only `pause` if it is 
 in `predock`, `steer_dock`, or `parralel_correction` state.
 
----
 
-### Docker Container
 
-A docker file is provieded to buid a container for autodock. Follow these steps:
-
-```bash
-cd catkin_ws/src/autodock
-docker build -t osrf/autodock:v1 .
-docker run -it --network host osrf/autodock:v1 bash -c "$COMMAND"
-```
-
----
-
-## Notes
-
-> The initial development of this code was graciously supported by [Kabam Robotics (aka Cognicept)](https://github.com/cognicept-admin).
-
-### Future Work
- - Advance `ObstacleObserver`: filter occupancy of charging station on costmap.
-
-### Stray Commands 
-
-Debug by launching autodock node on a seperate terminal
-```bash
-# Terminal 1
-roslaunch autodock_sim dock_sim.launch autodock_server:=false
-
-# Terminal 2, specify config.yaml with the 'autodock_config' arg
-roslaunch autodock_core autodock_server.launch \
-    autodock_config:=src/autodock/autodock_examples/configs/mock_robot.yaml
-```
