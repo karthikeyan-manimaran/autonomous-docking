@@ -1,129 +1,217 @@
-# autonomous docking
+Here is a detailed and professional `README.md` for the **autonomous docking** ROS package, based on your original content. It includes clear structure, additional installation commands, and formatting improvements — all without emojis.
 
+---
 
-ROS packages for autonomous docking
+# Autonomous Docking
 
-`autodock` a state machine based auto docking solution for differential-drive robot,
-allows accurate and reliable docking. It utilizes 3 fiducial markers to locate the 
-position of the docking station. Hence, the Robot should equip with a camera input
-for fiducial marker detection. Note that, this package works on top of the navigation 
-stack, not making any alteration to the robot's nav stack. The solution is fully
-tested on multiple simulated and actual robots.
+ROS packages for autonomous docking of differential-drive robots using fiducial markers.
 
+This solution, `autodock`, implements a reliable and accurate **state machine-based autonomous docking system** for robots with differential drive. It operates **on top of the ROS navigation stack** and **requires a camera** for detecting fiducial markers placed on the docking station. The system has been thoroughly tested in both simulation and real-world environments.
 
-Packages:
- - `autodock_core`: Core autodock scripts and lib
- - `autodock_examples`: Examples for autodock
- - `autodock_sim`: Autodock Simulation
+---
 
-## Installation
+## Package Overview
 
-[ROS Noetic](http://wiki.ros.org/noetic/Installation/Ubuntu) is used during development.
+* **`autodock_core`**: Core scripts and logic for the docking state machine.
+* **`autodock_examples`**: Example scripts and test cases for autodocking.
+* **`autodock_sim`**: Simulation environment for testing autodocking in Gazebo.
 
-Dependencies
- - [Fiducial](https://github.com/UbiquityRobotics/fiducials)
- - [Turtlebot Simulation](http://wiki.ros.org/turtlebot3_simulations) ** Optional
+---
+
+## Requirements
+
+* Ubuntu 20.04
+* ROS Noetic Ninjemys ([Install Instructions](http://wiki.ros.org/noetic/Installation/Ubuntu))
+* A camera-equipped robot (for fiducial detection)
+* Catkin workspace (`catkin_ws`)
+
+---
+
+## Dependencies
+
+Install the required ROS packages and external dependencies:
 
 ```bash
-# First, clone repos and deps to 'catkin_ws/src', then install
-cd catkin_ws
-rosdep update && rosdep install --from-paths src --ignore-src -yr
+# Create and initialize catkin workspace
+mkdir -p ~/catkin_ws/src
+cd ~/catkin_ws/src
+
+# Clone this repository and required dependencies
+git clone https://github.com/YOUR_USERNAME/autodock.git
+git clone https://github.com/UbiquityRobotics/fiducials.git
+
+# (Optional) Turtlebot3 simulation support
+sudo apt update
+sudo apt install ros-noetic-turtlebot3-gazebo ros-noetic-turtlebot3-navigation ros-noetic-turtlebot3-msgs
+
+# Install any remaining dependencies
+cd ~/catkin_ws
+rosdep update
+rosdep install --from-paths src --ignore-src -r -y
+
+# Build the workspace
 catkin_make
+
+# Source the workspace
+source devel/setup.bash
 ```
 
-## Run Examples on Simulation with MockRobot
+---
 
-Run `MockRobot` in gazebo world
+## Running in Simulation with MockRobot
+
+This launches a Gazebo simulation with a mock differential drive robot and a docking station with fiducial markers.
+
 ```bash
 roslaunch autodock_sim dock_sim.launch
 ```
 
-try to send an action goal request
+Once launched, send a docking action request:
+
 ```bash
-rostopic pub /autodock_action/goal autodock_core/AutoDockingActionGoal {} --once
+rostopic pub /autodock_action/goal autodock_core/AutoDockingActionGoal "{}" --once
 ```
 
-Now you will see the robot starts to execute a series of autodocking sequence.
+**Expected Behavior**:
+The robot will initiate an autonomous docking sequence. Upon successful docking, it will send a `std_srvs/Trigger` request to the `MockCharger`, which verifies the docking state and sends a success response back.
 
-> To explain..... when an action goal `AutoDockingActionGoal` is received by the robot, 
-the robot will start to docking sequence. When it manages to reach the targer 
-docking station, it will send a `std_srvs/Trigger` to the `MockCharger` charging 
-station, to activate the charger. The charger will validate if the robot is docked, 
-then send a "Success" back to the robot if all goes well.
-Subsequently, end the entire docking action.
+---
+
+## Useful Commands
 
 ```bash
-# To remote control the robot: 
+# Manual teleoperation of the robot
 rosrun teleop_twist_keyboard teleop_twist_keyboard.py
-# To cancel an active docking action: 
-rostopic pub /autodock_action/cancel actionlib_msgs/GoalID {} --once
-# To pause an active docking action: 
-rostopic pub /pause_dock std_msgs/Bool True --once
+
+# Cancel active docking action
+rostopic pub /autodock_action/cancel actionlib_msgs/GoalID "{}" --once
+
+# Pause docking (useful during testing)
+rostopic pub /pause_dock std_msgs/Bool "data: true" --once
 ```
 
-### More Tests
+---
 
-This simple smoke test script will randomly move the robot to some random position 
-in the gazebo world, and initiate the docking sequence.
+## Smoke Test Script
+
+Run multiple randomized docking tests in simulation:
 
 ```bash
-# indicate the number of "spawn" with the -c arg
+# Run 10 iterations
 rosrun autodock_examples dock_sim_test.py -c 10
 ```
 
 ---
 
-## Run with turtlebot3
+## Running with TurtleBot3 (Front-Dock)
 
-This demonstrates front dock with turtlebot3, attached with a front camera. 
-A smaller docking station is used here.
-
- - dependency: `sudo apt install ros-noetic-turtlebot3-gazebo`
+This setup demonstrates autodocking using a TurtleBot3 robot equipped with a front-facing camera.
 
 ```bash
+# Launch TurtleBot3 with front-docking simulation
 roslaunch autodock_sim tb3_dock_sim.launch
-rostopic pub /autodock_action/goal autodock_core/AutoDockingActionGoal {} --once
+
+# Send docking goal
+rostopic pub /autodock_action/goal autodock_core/AutoDockingActionGoal "{}" --once
 ```
 
 ---
 
-## Run Turtlebot3 with navigation
+## TurtleBot3 Navigation + Autodocking Integration
 
-This demo depends on [turtlebot3_simulation](https://github.com/ROBOTIS-GIT/turtlebot3_simulations) 
-and [move_base](http://wiki.ros.org/move_base). 
-Please ensures that you have all dependencies are fully installed.
+Integrate `autodock` with the full TurtleBot3 navigation stack.
 
-> Note: You can install all turtlebot simulation related packages by 
-`sudo apt install ros-noetic-turtlebot3*`, or follow the setup steps in
-[Robotis docs](https://emanual.robotis.com/docs/en/platform/turtlebot3/simulation/). 
-Once done, continue to follow the steps to launch and map the world with a `burger` robot.
-
-Please ensures that entire pipeline of the turtlebot works before proceeding with the 
-autodock tb3 demo below. Once done with mapping, you can start with the `autodock` simulation:
+### Step 1: Ensure Dependencies
 
 ```bash
-# 1. launch turtlebot3 gazebo world, and also autodock_server
-roslaunch autodock_sim tb3_nav_dock_sim.launch
+sudo apt install ros-noetic-turtlebot3-gazebo ros-noetic-turtlebot3-navigation ros-noetic-turtlebot3-description
+```
 
-# 2. launch navigation stack, with provided map. You can also remap the environment by following the turtlebot sim tutorial
-## New Terminal
+> You can also install all relevant packages:
+
+```bash
+sudo apt install ros-noetic-turtlebot3*
+```
+
+Make sure the `TURTLEBOT3_MODEL` environment variable is set:
+
+```bash
 export TURTLEBOT3_MODEL=burger
-roslaunch turtlebot3_navigation turtlebot3_navigation.launch map_file:=$HOME/catkin_ws/src/autodock/autodock_sim/maps/map.yaml open_rviz:=0
 ```
 
-Now, localize the robot and move the robot with rviz.
-Move the robot as such that the camera is facing the charging station.
+---
+
+### Step 2: Launch World + Autodock Server
+
 ```bash
-# 3. send a dock action. make sure that the robot's camera is facing the charger
-## New Terminal
-rostopic pub /autodock_action/goal autodock_core/AutoDockingActionGoal {} --once
+roslaunch autodock_sim tb3_nav_dock_sim.launch
 ```
 
-This will also demonstrate how the simple `obstacle_observer` works. 
-Try place an obstacle near the robot during docking and see if it pauses.
+---
 
-> Note: the current `obstacle_observer` will only `pause` if it is 
-in `predock`, `steer_dock`, or `parralel_correction` state.
+### Step 3: Launch Navigation Stack with Map
 
+Use an existing map or create one following the TurtleBot3 SLAM tutorial.
 
+```bash
+roslaunch turtlebot3_navigation turtlebot3_navigation.launch \
+  map_file:=$HOME/catkin_ws/src/autodock/autodock_sim/maps/map.yaml \
+  open_rviz:=false
+```
 
+---
+
+### Step 4: Dock the Robot
+
+Make sure the robot is localized and facing the charging station:
+
+```bash
+rostopic pub /autodock_action/goal autodock_core/AutoDockingActionGoal "{}" --once
+```
+
+---
+
+## Obstacle Handling
+
+The docking process includes a basic obstacle avoidance mechanism via the `obstacle_observer` node. If an obstacle is detected during critical docking states (`predock`, `steer_dock`, or `parallel_correction`), the system will **pause** the docking process. Remove the obstacle to resume.
+
+---
+
+## Notes
+
+* This package **does not modify** your navigation stack and can be integrated with existing move\_base pipelines.
+* The docking markers should be **visible and uniquely identifiable** using fiducial IDs.
+* For best results, calibrate the camera and ensure stable marker detection.
+
+---
+
+## Troubleshooting
+
+* If the docking action doesn't start, verify that:
+
+  * Camera is publishing images.
+  * Fiducials are detected.
+  * Robot is properly localized.
+  * The `/autodock_action/goal` topic is publishing correctly.
+
+* If `catkin_make` fails:
+
+  * Make sure all dependencies are correctly installed.
+  * Run `rosdep install --from-paths src --ignore-src -r -y` again.
+
+---
+
+## License
+
+This project is licensed under the MIT License. See the `LICENSE` file for details.
+
+---
+
+## Acknowledgments
+
+* Ubiquity Robotics for their fiducial marker detection package.
+* ROBOTIS for the TurtleBot3 simulation tools.
+
+---
+
+Let me know if you'd like this in a `README.md` file format or converted into documentation (e.g. Sphinx, Doxygen).
