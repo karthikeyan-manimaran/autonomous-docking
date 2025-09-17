@@ -1,7 +1,3 @@
-Here is a detailed and professional `README.md` for the **autonomous docking** ROS package, based on your original content. It includes clear structure, additional installation commands, and formatting improvements — all without emojis.
-
----
-
 # Autonomous Docking
 
 ROS packages for autonomous docking of differential-drive robots using fiducial markers.
