@@ -1,0 +1,2 @@
+autodock/autodock_core:autodock/autodock_examples:autodock/autodock_sim
+-DCATKIN_DEVEL_PREFIX=/home/karthi/catkin_ws/devel -DCMAKE_INSTALL_PREFIX=/home/karthi/catkin_ws/install -G Unix Makefiles
